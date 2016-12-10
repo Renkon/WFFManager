@@ -49,6 +49,7 @@ public class WFFFrame extends JFrame
 	private boolean loaded = false;
 	private DataController dc = new DataController(this);
 	private JLabel[] labelMaps = new JLabel[20];
+	private JLabel[][] labelPoints = new JLabel[20][4];
 	private JPositionedComboBox[][] comboPoints = new JPositionedComboBox[20][4];
 	private JList<Player> list;
 	
@@ -148,7 +149,7 @@ public class WFFFrame extends JFrame
 				}
 			}
 		});
-		btnLoadRefereee.setBounds(30, 505, 740, 32);
+		btnLoadRefereee.setBounds(20, 505, 760, 32);
 		getContentPane().add(btnLoadRefereee);
 		
 		JButton btnSaveOutput = new JButton("Save output");
@@ -172,7 +173,7 @@ public class WFFFrame extends JFrame
 			}
 		});
 		btnSaveOutput.setFont(new Font("Tahoma", Font.BOLD, 11));
-		btnSaveOutput.setBounds(649, 48, 120, 40);
+		btnSaveOutput.setBounds(659, 48, 120, 40);
 		getContentPane().add(btnSaveOutput);
 		
 		list = new JList<Player>(listModel);
@@ -218,12 +219,12 @@ public class WFFFrame extends JFrame
 
 		
 		JScrollPane listScroll = new JScrollPane(list);
-		listScroll.setBounds(649, 120, 120, 300);
+		listScroll.setBounds(659, 120, 120, 300);
 		getContentPane().add(listScroll);
 		
 		JLabel lblPlayerList = new JLabel("Player list");
 		lblPlayerList.setHorizontalAlignment(SwingConstants.CENTER);
-		lblPlayerList.setBounds(648, 99, 122, 14);
+		lblPlayerList.setBounds(658, 99, 122, 14);
 		getContentPane().add(lblPlayerList);
 		
 		JButton btnCurrentStandings = new JButton("Copy standings");
@@ -240,27 +241,29 @@ public class WFFFrame extends JFrame
 			}
 		});
 		btnCurrentStandings.setFont(new Font("Tahoma", Font.BOLD, 11));
-		btnCurrentStandings.setBounds(649, 462, 121, 32);
+		btnCurrentStandings.setBounds(659, 462, 121, 32);
 		getContentPane().add(btnCurrentStandings);
 		
-		JLabel lblTable = new JLabel("                  Mapname                            3 points                    2 points                     1 point                      1 point");
+		JLabel lblTable = new JLabel("           Mapname                         3 points                           2 points                           1 point                              1 point");
 		lblTable.setFont(new Font("Tahoma", Font.BOLD, 11));
 		lblTable.setBounds(20, 35, 600, 14);
 		getContentPane().add(lblTable);
 		
 		JLabel lblRightClickA = new JLabel("For DNS right click player");
-		lblRightClickA.setBounds(650, 431, 120, 20);
+		lblRightClickA.setBounds(660, 431, 120, 20);
 		getContentPane().add(lblRightClickA);
 		
 		for (int i = 0; i < 20; i++)
 		{
 			labelMaps[i] = new JLabel((i + 1) + ". undefined");
-			labelMaps[i].setBounds(30, 55 + i * 22, 150, 20);
+			labelMaps[i].setBounds(10, 55 + i * 22, 140, 20);
 			getContentPane().add(labelMaps[i]);
 			for (int j = 0; j < 4; j++)
 			{
+				labelPoints[i][j] = new JLabel("(0)");
+				labelPoints[i][j].setBounds(255 + j * 125 + 5, 55 + i * 22, 30, 20);
 				comboPoints[i][j] = new JPositionedComboBox(i, j);
-				comboPoints[i][j].setBounds(185 + j * 105, 55 + i * 22, 100, 20);
+				comboPoints[i][j].setBounds(155 + j * 125, 55 + i * 22, 100, 20);
 				comboPoints[i][j].addItemListener(new ItemListener(){
 					@Override
 					public void itemStateChanged(ItemEvent e) {
@@ -270,28 +273,38 @@ public class WFFFrame extends JFrame
 							{
 								Player affected = (Player) e.getItem();
 								int i = ((JPositionedComboBox) e.getSource()).getI();
+								int j = ((JPositionedComboBox) e.getSource()).getJ();
 								if (e.getStateChange() == ItemEvent.SELECTED)
 								{
-									switch(((JPositionedComboBox) e.getSource()).getJ())
+									switch(j)
 									{
-										case 0: affected.addFirstPosition(i); break;
-										case 1: affected.addSecondPosition(i); break;
-										case 2: affected.addThirdPosition(i); break;
+										case 0: affected.addFirstPosition(i); 
+										break;
+										case 1: affected.addSecondPosition(i); 
+										break;
+										case 2: affected.addThirdPosition(i);
+										break;
 										case 3: affected.addForthPosition(i);
 									}
+									labelPoints[i][j].setText("(" + affected.getPointsBeforeRound(i) + ")");
 								}
 								else if (e.getStateChange() == ItemEvent.DESELECTED)
 								{
-									switch(((JPositionedComboBox) e.getSource()).getJ())
+									labelPoints[i][j].setText("(0)");
+									switch(j)
 									{
-										case 0: affected.removeFirstPosition(i); break;
-										case 1: affected.removeSecondPosition(i); break;
-										case 2: affected.removeThirdPosition(i); break;
+										case 0: affected.removeFirstPosition(i); 
+										break;
+										case 1: affected.removeSecondPosition(i); 
+										break;
+										case 2: affected.removeThirdPosition(i); 
+										break;
 										case 3: affected.removeForthPosition(i);
 									}
 								}
 							}
 							catch (Exception ex) {
+								ex.printStackTrace();
 								if (!((JPositionedComboBox) e.getSource()).getAutoCompleteSupport().isStrict())
 									((JPositionedComboBox) e.getSource()).getAutoCompleteSupport().setStrict(true);
 							}
@@ -299,6 +312,7 @@ public class WFFFrame extends JFrame
 					}
 				});
 				getContentPane().add(comboPoints[i][j]);
+				getContentPane().add(labelPoints[i][j]);
 			}
 		}
 		
@@ -327,7 +341,7 @@ public class WFFFrame extends JFrame
 	{
 		return comboPoints;
 	}
-	
+
 	private int getRow(Point point)
 	{
 		return list.locationToIndex(point);

@@ -1,6 +1,7 @@
 package ar.com.renkon.model;
 
-public class Player {
+public class Player 
+{
 	private String name;
 	private int firstPositions = 0, secondPositions = 0, thirdPositions = 0, forthPositions = 0;
 	private boolean didShow = true;
@@ -13,42 +14,42 @@ public class Player {
 	
 	public void addFirstPosition(int round){
 		firstPositions++;
-		pointsPerRound[round] = 3;
+		pointsPerRound[round] += 3;
 	}
 	
 	public void addSecondPosition(int round){
 		secondPositions++;
-		pointsPerRound[round] = 2;
+		pointsPerRound[round] += 2;
 	}
 	
 	public void addThirdPosition(int round){
 		thirdPositions++;
-		pointsPerRound[round] = 1;
+		pointsPerRound[round] += 1;
 	}
 	
 	public void addForthPosition(int round){
 		forthPositions++;
-		pointsPerRound[round] = 1;
+		pointsPerRound[round] += 1;
 	}
 	
 	public void removeFirstPosition(int round){
 		firstPositions--;
-		pointsPerRound[round] = 0;
+		pointsPerRound[round] -= 3;
 	}
 	
 	public void removeSecondPosition(int round){
 		secondPositions--;
-		pointsPerRound[round] = 0;
+		pointsPerRound[round] -= 2;
 	}
 	
 	public void removeThirdPosition(int round){
 		thirdPositions--;
-		pointsPerRound[round] = 0;
+		pointsPerRound[round] -= 1;
 	}
 	
 	public void removeForthPosition(int round){
 		forthPositions--;
-		pointsPerRound[round] = 0;
+		pointsPerRound[round] -= 1;
 	}
 	
 	public int getFirstPositions() {
