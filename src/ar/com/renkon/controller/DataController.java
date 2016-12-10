@@ -19,7 +19,7 @@ public class DataController
 {
 	private List<Player> players = new ArrayList<Player>();
 	private List<String> maps = new ArrayList<String>();
-	private String tournament, stage, refereeName;
+	private String tournament, stage, refereeName = null, trialRefereeName = null, assistantName = null;
 	private WFFFrame frame;
 	
 	public DataController(WFFFrame frame)
@@ -65,7 +65,11 @@ public class DataController
 				writer.println(sortedPlayers.get(i).getPointsAsString() + " " + sortedPlayers.get(i).getName());
 		}
 		writer.println("");
-		writer.print("Referee: " + refereeName);
+		writer.println("Referee: " + refereeName);
+		if (assistantName != null)
+			writer.println("Assistant: " + assistantName);
+		else
+			writer.println("Trial referee: " + trialRefereeName);
 		writer.close();
 	}
 	
@@ -125,9 +129,9 @@ public class DataController
 		{
 			sb.append(prefix);
 			prefix = ", ";
-			sb.append(p.getName());
-			sb.append(" ");
 			sb.append(p.getPointsAsString());
+			sb.append(" ");
+			sb.append(p.getName());
 		}
 		Utils.copyToClipboard(sb.toString());
 	}
@@ -137,22 +141,38 @@ public class DataController
 		List<String> fileLines = Files.readAllLines(refereeFile.toPath());
 		// STAGE 0: we clean EMPTY lines
 		fileLines.removeAll(Collections.singleton(""));
-		// STAGE 1: we need to find <mapsCode> tag to know where data initializes
+		// STAGE 1: we load refereeName, assistant and trial referee name
 		Iterator<String> fileIterator = fileLines.iterator();
+		while (fileIterator.hasNext())
+		{
+			String line = fileIterator.next();
+			if (line.startsWith("Referee: ")) // Referee name!
+				refereeName = line.replace("Referee: ", "");
+			if (line.startsWith("Assistant: ")) // Assistant name!
+				assistantName = line.replace("Assistant: ", "");
+			if (line.startsWith("Trial referee: ") || line.startsWith("Trial Referee: "))
+				trialRefereeName = line.replace("Trial referee: ", "").replace("Trial Referee: ", "");
+			if (refereeName != null)
+			{
+				if (assistantName != null || trialRefereeName != null)
+					break;
+			}
+		}
+		
+		// STAGE 2: we need to find <mapsCode> tag to know where data initializes
 		while (fileIterator.hasNext()) 
 		{
 			String nextLine = fileIterator.next();
 			if (nextLine.contains("<mapsCode>"))
 				break;
 		}
-		// STAGE 2: Read information regarding the tournament
+		// STAGE 3: Read information regarding the tournament
 		String dataLine = fileIterator.next();
 		dataLine = dataLine.replace("[b]", "").replace("[/b]", "").replace(" with ", ", ").trim(); // removed bbcode tags and added , 
 		String info[] = dataLine.split(", ");
 		tournament = info[0];
 		stage = info[1];
-		refereeName = info[2];
-		// STAGE 3: Find map names and save them
+		// STAGE 4: Find map names and save them
 		while (fileIterator.hasNext())
 		{
 			// We make sure its like this: [td]X. Map name[/td]
@@ -168,7 +188,7 @@ public class DataController
 			}
 		}
 		
-		// STAGE 4: Find players tag
+		// STAGE 5: Find players tag
 		while (fileIterator.hasNext())
 		{
 			String line = fileIterator.next();
@@ -206,5 +226,12 @@ public class DataController
 	public String getRefereeName() {
 		return refereeName;
 	}
+
+	public String getTrialRefereeName() {
+		return trialRefereeName;
+	}
 	
+	public String getAssistantName() {
+		return assistantName;
+	}
 }
