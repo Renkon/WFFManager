@@ -26,6 +26,7 @@ import javax.swing.JTextField;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -59,6 +60,8 @@ public class WFFFrame extends JFrame
 		this.setSize(800, 600);
 		this.setLocation(Utils.getX(this), Utils.getY(this));
 		this.setTitle("WFF Manager");
+		ImageIcon icon = new ImageIcon(getClass().getResource("/ar/com/renkon/ui/fotl.png"));
+		this.setIconImage(icon.getImage());
 		getContentPane().setLayout(null);
 		
 		DefaultListModel<Player> listModel = new DefaultListModel<Player>();
