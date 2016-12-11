@@ -1,7 +1,6 @@
 package ar.com.renkon.controller;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -9,14 +8,18 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import ar.com.renkon.model.Player;
 import ar.com.renkon.ui.JPositionedComboBox;
 import ar.com.renkon.ui.WFFFrame;
+import ar.com.renkon.utils.LoggerFactory;
 import ar.com.renkon.utils.Utils;
 
 public class DataController 
 {
+	private static final Logger logger = LoggerFactory.getClassLogger(DataController.class.getSimpleName());
 	private List<Player> players = new ArrayList<Player>();
 	private List<String> maps = new ArrayList<String>();
 	private String tournament, stage, refereeName = null, trialRefereeName = null, assistantName = null;
@@ -27,50 +30,66 @@ public class DataController
 		this.frame = frame;
 	}
 	
-	public void outputToFile(String destination) throws Exception
+	public ArrayList<String> getOutput()
 	{
-		PrintWriter writer = new PrintWriter(destination, "UTF-8");
-		writer.println("[b]" + tournament + "[/b], [b]" + stage + "[/b] with " + refereeName);
-		writer.println("");
-		writer.println("[table]");
-		writer.println("[td]");
-		writer.println("[tr]");
-		writer.println("[td]Mapname[/td]");
-		writer.println("[td]3 points[/td]");
-		writer.println("[td]2 points[/td]");
-		writer.println("[td]1 point[/td]");
-		writer.println("[td]1 point[/td]");
-		writer.println("[/tr]");
-		writer.println("");
-		writer.println("");
+		ArrayList<String> output = new ArrayList<String>();
+		output.add("[b]" + tournament + "[/b], [b]" + stage + "[/b] with " + refereeName);
+		output.add("");
+		output.add("[table]");
+		output.add("[td]");
+		output.add("[tr]");
+		output.add("[td]Mapname[/td]");
+		output.add("[td]3 points[/td]");
+		output.add("[td]2 points[/td]");
+		output.add("[td]1 point[/td]");
+		output.add("[td]1 point[/td]");
+		output.add("[/tr]");
+		output.add("");
+		output.add("");
 		for (int i = 0; i < maps.size(); i++)
 		{
 			JPositionedComboBox[] combos = frame.getComboPoints()[i];
-			writer.println("[tr]");
-			writer.println("[td]" + maps.get(i) + "[/td]");
+			output.add("[tr]");
+			output.add("[td]" + maps.get(i) + "[/td]");
 			for (int j = 0; j < combos.length; j++)
-				writer.println("[td]" + (combos[j].getSelectedItem() == null ? " " : ((Player) combos[j].getSelectedItem()).getName() + " (" + ((Player) combos[j].getSelectedItem()).getPointsBeforeRound(i) +  ")") + "[/td]");
-			writer.println("[/tr]");
+				output.add("[td]" + (combos[j].getSelectedItem() == null ? " " : ((Player) combos[j].getSelectedItem()).getName() + " (" + ((Player) combos[j].getSelectedItem()).getPointsBeforeRound(i) +  ")") + "[/td]");
+			output.add("[/tr]");
 		}
-		writer.println("");
-		writer.println("[/table]");
-		writer.println("");
-		writer.println("");
+		output.add("");
+		output.add("[/table]");
+		output.add("");
+		output.add("");
 		List<Player> sortedPlayers = getPlayersSorted();
 		for (int i = 0; i < sortedPlayers.size(); i++)
 		{
 			if (i <= 2)
-				writer.println("[b]" + sortedPlayers.get(i).getPointsAsString() + " " + sortedPlayers.get(i).getName() + "[/b]");
+				output.add("[b]" + sortedPlayers.get(i).getPointsAsString() + " " + sortedPlayers.get(i).getName() + "[/b]");
 			else
-				writer.println(sortedPlayers.get(i).getPointsAsString() + " " + sortedPlayers.get(i).getName());
+				output.add(sortedPlayers.get(i).getPointsAsString() + " " + sortedPlayers.get(i).getName());
 		}
-		writer.println("");
-		writer.println("Referee: " + refereeName);
+		output.add("");
+		output.add("Referee: " + refereeName);
 		if (assistantName != null)
-			writer.println("Assistant: " + assistantName);
+			output.add("Assistant: " + assistantName);
 		else
-			writer.println("Trial referee: " + trialRefereeName);
-		writer.close();
+			output.add("Trial referee: " + trialRefereeName);
+		return output;
+	}
+	
+	public void outputToFile(String destination) throws Exception
+	{
+		try
+		{
+			logger.log(Level.INFO, "Outputting to " + destination);
+			PrintWriter writer = new PrintWriter(destination, "UTF-8");
+			for (String s : getOutput())
+				writer.println(s);
+			writer.close();
+		}
+		catch (Exception e)
+		{
+			logger.log(Level.SEVERE, e.toString(), e);
+		}
 	}
 	
 	public List<Player> getPlayersSorted()
@@ -120,91 +139,94 @@ public class DataController
 		return currentPlayers;
 	}
 	
-	public void currentStandings()
+	public void copyCode()
 	{
-		List<Player> playersSorted = getPlayersSorted();
 		StringBuilder sb = new StringBuilder();
-		String prefix = "";
-		for (Player p : playersSorted)
+		for (String s : getOutput())
 		{
-			sb.append(prefix);
-			prefix = ", ";
-			sb.append(p.getPointsAsString());
-			sb.append(" ");
-			sb.append(p.getName());
+			sb.append(s + "\n");
 		}
 		Utils.copyToClipboard(sb.toString());
 	}
 	
-	public void loadFile(File refereeFile) throws IOException
+	public void loadFile(File refereeFile)
 	{
-		List<String> fileLines = Files.readAllLines(refereeFile.toPath());
-		// STAGE 0: we clean EMPTY lines
-		fileLines.removeAll(Collections.singleton(""));
-		// STAGE 1: we load refereeName, assistant and trial referee name
-		Iterator<String> fileIterator = fileLines.iterator();
-		while (fileIterator.hasNext())
+		logger.log(Level.INFO, "Initializing file load from " + refereeFile.getPath());
+		try
 		{
-			String line = fileIterator.next();
-			if (line.startsWith("Referee: ")) // Referee name!
-				refereeName = line.replace("Referee: ", "");
-			if (line.startsWith("Assistant: ")) // Assistant name!
-				assistantName = line.replace("Assistant: ", "");
-			if (line.startsWith("Trial referee: ") || line.startsWith("Trial Referee: "))
-				trialRefereeName = line.replace("Trial referee: ", "").replace("Trial Referee: ", "");
-			if (refereeName != null)
+			List<String> fileLines = Files.readAllLines(refereeFile.toPath());
+			// STAGE 0: we clean EMPTY lines
+			fileLines.removeAll(Collections.singleton(""));
+			// STAGE 1: we load refereeName, assistant and trial referee name
+			Iterator<String> fileIterator = fileLines.iterator();
+			while (fileIterator.hasNext())
 			{
-				if (assistantName != null || trialRefereeName != null)
+				String line = fileIterator.next();
+				if (line.startsWith("Referee: ")) // Referee name!
+					refereeName = line.replace("Referee: ", "");
+				if (line.startsWith("Assistant: ")) // Assistant name!
+					assistantName = line.replace("Assistant: ", "");
+				if (line.startsWith("Trial referee: ") || line.startsWith("Trial Referee: "))
+					trialRefereeName = line.replace("Trial referee: ", "").replace("Trial Referee: ", "");
+				if (refereeName != null)
+				{
+					if (assistantName != null || trialRefereeName != null)
+						break;
+				}
+			}
+			logger.log(Level.INFO, "Loaded initial data (ref, assist and trial)");
+			// STAGE 2: we need to find <mapsCode> tag to know where data initializes
+			while (fileIterator.hasNext()) 
+			{
+				String nextLine = fileIterator.next();
+				if (nextLine.contains("<mapsCode>"))
 					break;
 			}
-		}
-		
-		// STAGE 2: we need to find <mapsCode> tag to know where data initializes
-		while (fileIterator.hasNext()) 
-		{
-			String nextLine = fileIterator.next();
-			if (nextLine.contains("<mapsCode>"))
-				break;
-		}
-		// STAGE 3: Read information regarding the tournament
-		String dataLine = fileIterator.next();
-		dataLine = dataLine.replace("[b]", "").replace("[/b]", "").replace(" with ", ", ").trim(); // removed bbcode tags and added , 
-		String info[] = dataLine.split(", ");
-		tournament = info[0];
-		stage = info[1];
-		// STAGE 4: Find map names and save them
-		while (fileIterator.hasNext())
-		{
-			// We make sure its like this: [td]X. Map name[/td]
-			String lineText = fileIterator.next();
-			if (lineText.contains("[td]") && lineText.contains("[/td]") && lineText.contains("."))
+			// STAGE 3: Read information regarding the tournament
+			String dataLine = fileIterator.next();
+			dataLine = dataLine.replace("[b]", "").replace("[/b]", "").replace(" with ", ", ").trim(); // removed bbcode tags and added , 
+			String info[] = dataLine.split(", ");
+			tournament = info[0];
+			stage = info[1];
+			// STAGE 4: Find map names and save them
+			while (fileIterator.hasNext())
 			{
-				maps.add(lineText.replace("[td]", "").replace("[/td]", "").trim());
-			}
-			if (lineText.contains("</mapsCode>"))
-			{
-				// Success, parsed maplist
-				break;
-			}
-		}
-		
-		// STAGE 5: Find players tag
-		while (fileIterator.hasNext())
-		{
-			String line = fileIterator.next();
-			if (line.contains("<playerList>"))
-			{
-				// We found players now, time to loop
-				while(!line.contains("</playerList>"))
+				// We make sure its like this: [td]X. Map name[/td]
+				String lineText = fileIterator.next();
+				if (lineText.contains("[td]") && lineText.contains("[/td]") && lineText.contains("."))
 				{
-					line = fileIterator.next();
-					if (!line.contains("</playerList>"))
-						players.add(new Player(line));
+					maps.add(lineText.replace("[td]", "").replace("[/td]", "").trim());
 				}
-				break;
+				if (lineText.contains("</mapsCode>"))
+				{
+					// Success, parsed maplist
+					logger.log(Level.INFO, "Parsed maplist");
+					break;
+				}
+			}
+			
+			// STAGE 5: Find players tag
+			while (fileIterator.hasNext())
+			{
+				String line = fileIterator.next();
+				if (line.contains("<playerList>"))
+				{
+					// We found players now, time to loop
+					while(!line.contains("</playerList>"))
+					{
+						line = fileIterator.next();
+						if (!line.contains("</playerList>"))
+							players.add(new Player(line));
+					}
+					logger.log(Level.INFO, "Parsed playerlist");
+					break;
+				}
 			}
 		}
-		
+		catch (Exception e)
+		{
+			logger.log(Level.SEVERE, e.toString(), e);
+		}
 	}
 
 	public List<Player> getPlayers() {

@@ -11,6 +11,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 import ar.com.renkon.controller.DataController;
 import ar.com.renkon.model.Player;
+import ar.com.renkon.utils.LoggerFactory;
 import ar.com.renkon.utils.Utils;
 import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.swing.AutoCompleteSupport;
@@ -34,9 +35,13 @@ import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.awt.event.ActionEvent;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
@@ -44,6 +49,7 @@ import javax.swing.JMenuItem;
 @SuppressWarnings("serial")
 public class WFFFrame extends JFrame 
 {
+	private static final Logger logger = LoggerFactory.getClassLogger(WFFFrame.class.getSimpleName());
 	private JTextField textFieldOutput;
 	private JFrame self;
 	private boolean loaded = false;
@@ -99,10 +105,19 @@ public class WFFFrame extends JFrame
 		btnBrowse.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) 
 			{
+				logger.log(Level.INFO, "Button browse pressed");
 				int fcResult = fcSaveFile.showSaveDialog(self);
 				if (fcResult == JFileChooser.APPROVE_OPTION)
 				{
-					textFieldOutput.setText(fcSaveFile.getSelectedFile().toString());
+					try 
+					{
+						new FileOutputStream(fcSaveFile.getSelectedFile(), true).close();
+						textFieldOutput.setText(fcSaveFile.getSelectedFile().toString());
+					} 
+					catch (IOException ex) 
+					{
+						JOptionPane.showMessageDialog(self, "Beware, you have selected an invalid destination path!", "ERROR", JOptionPane.ERROR_MESSAGE);
+					}
 				}
 			}
 		});
@@ -115,6 +130,7 @@ public class WFFFrame extends JFrame
 			@SuppressWarnings("rawtypes")
 			public void actionPerformed(ActionEvent e) 
 			{
+				logger.log(Level.INFO, "Button load pressed");
 				int fcResult = fcLoadFile.showOpenDialog(self);
 				if (fcResult == JFileChooser.APPROVE_OPTION)
 				{
@@ -145,6 +161,7 @@ public class WFFFrame extends JFrame
 					catch (Exception ex)
 					{
 						JOptionPane.showMessageDialog(self, ex.toString(), "Exception found", JOptionPane.ERROR_MESSAGE);
+						logger.log(Level.SEVERE, ex.toString(), ex);
 					}
 				}
 			}
@@ -156,6 +173,7 @@ public class WFFFrame extends JFrame
 		btnSaveOutput.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) 
 			{
+				logger.log(Level.INFO, "Button save pressed");
 				if (!loaded)
 				{
 					JOptionPane.showMessageDialog(self, "You haven't loaded referee's file yet", "ERROR", JOptionPane.ERROR_MESSAGE);
@@ -169,6 +187,7 @@ public class WFFFrame extends JFrame
 				catch (Exception ex) 
 				{
 					JOptionPane.showMessageDialog(self, ex.toString(), "Error while trying to save", JOptionPane.ERROR_MESSAGE);
+					logger.log(Level.SEVERE, ex.toString(), ex);
 				}
 			}
 		});
@@ -227,17 +246,18 @@ public class WFFFrame extends JFrame
 		lblPlayerList.setBounds(658, 99, 122, 14);
 		getContentPane().add(lblPlayerList);
 		
-		JButton btnCurrentStandings = new JButton("Copy standings");
+		JButton btnCurrentStandings = new JButton("Copy BBCode");
 		btnCurrentStandings.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) 
 			{
+				logger.log(Level.INFO, "Button copy to clipboard pressed");
 				if (!loaded)
 				{
 					JOptionPane.showMessageDialog(self, "You haven't loaded referee's file yet", "ERROR", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
-				dc.currentStandings();
-				JOptionPane.showMessageDialog(self, "Results copied to clipboard (ctrl + v)\nBeware, if copied string is too large you may need to split it", "COPIED", JOptionPane.INFORMATION_MESSAGE);
+				dc.copyCode();
+				JOptionPane.showMessageDialog(self, "BBCode copied to clipboard (ctrl + v)", "COPIED", JOptionPane.INFORMATION_MESSAGE);
 			}
 		});
 		btnCurrentStandings.setFont(new Font("Tahoma", Font.BOLD, 11));
@@ -304,7 +324,6 @@ public class WFFFrame extends JFrame
 								}
 							}
 							catch (Exception ex) {
-								ex.printStackTrace();
 								if (!((JPositionedComboBox) e.getSource()).getAutoCompleteSupport().isStrict())
 									((JPositionedComboBox) e.getSource()).getAutoCompleteSupport().setStrict(true);
 							}
