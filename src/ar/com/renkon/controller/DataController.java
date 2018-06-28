@@ -39,9 +39,6 @@ public class DataController
 		output.add("[td]");
 		output.add("[tr]");
 		output.add("[td]Mapname[/td]");
-		output.add("[td]3 points[/td]");
-		output.add("[td]2 points[/td]");
-		output.add("[td]1 point[/td]");
 		output.add("[td]1 point[/td]");
 		output.add("[/tr]");
 		output.add("");
@@ -49,10 +46,12 @@ public class DataController
 		for (int i = 0; i < maps.size(); i++)
 		{
 			JPositionedComboBox[] combos = frame.getComboPoints()[i];
+			Player p1 = (Player) combos[0].getItemAt(0);
+			Player p2 = (Player) combos[0].getItemAt(1);
 			output.add("[tr]");
 			output.add("[td]" + maps.get(i) + "[/td]");
-			for (int j = 0; j < combos.length; j++)
-				output.add("[td]" + (combos[j].getSelectedItem() == null ? " " : ((Player) combos[j].getSelectedItem()).getName() + " (" + ((Player) combos[j].getSelectedItem()).getPointsBeforeRound(i) +  ")") + "[/td]");
+			output.add("[td]" + p1.getName() + " " + p1.getPointsBeforeRound(i) + " : " + 
+					p2.getPointsBeforeRound(i) + " " + p2.getName() + "[/td]");
 			output.add("[/tr]");
 		}
 		output.add("");
@@ -108,27 +107,6 @@ public class DataController
 		        if (p1.getFirstPositions() != p2.getFirstPositions())
 		        {
 		        	if (p1.getFirstPositions() > p2.getFirstPositions())
-		        		return -1;
-		        	else
-		        		return 1;
-		        }
-		        if (p1.getSecondPositions() != p2.getSecondPositions())
-		        {
-		        	if (p1.getSecondPositions() > p2.getSecondPositions())
-		        		return -1;
-		        	else
-		        		return 1;
-		        }
-		        if (p1.getThirdPositions() != p2.getThirdPositions())
-		        {
-		        	if (p1.getThirdPositions() > p2.getThirdPositions())
-		        		return -1;
-		        	else
-		        		return 1;
-		        }
-		        if (p1.getForthPositions() != p2.getForthPositions())
-		        {
-		        	if (p1.getForthPositions() > p2.getForthPositions())
 		        		return -1;
 		        	else
 		        		return 1;

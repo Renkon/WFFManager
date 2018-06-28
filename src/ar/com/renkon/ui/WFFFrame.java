@@ -54,9 +54,9 @@ public class WFFFrame extends JFrame
 	private JFrame self;
 	private boolean loaded = false;
 	private DataController dc = new DataController(this);
-	private JLabel[] labelMaps = new JLabel[20];
-	private JLabel[][] labelPoints = new JLabel[20][4];
-	private JPositionedComboBox[][] comboPoints = new JPositionedComboBox[20][4];
+	private JLabel[] labelMaps = new JLabel[13];
+	private JLabel[][] labelPoints = new JLabel[13][4];
+	private JPositionedComboBox[][] comboPoints = new JPositionedComboBox[13][4];
 	private JList<Player> list;
 	
 	public WFFFrame()
@@ -145,10 +145,10 @@ public class WFFFrame extends JFrame
 						dc.loadFile(selectedFile);
 						for (Player p : dc.getPlayers())
 							listModel.addElement(p);
-						for (int i = 0; i < 20; i++)
+						for (int i = 0; i < 13; i++)
 						{
 							Object[] players = dc.getPlayers().toArray();
-							for (int j = 0; j < 4; j++)
+							for (int j = 0; j < 1; j++)
 							{
 								AutoCompleteSupport a = AutoCompleteSupport.install(comboPoints[i][j], GlazedLists.eventListOf(players));
 								comboPoints[i][j].setAutoCompleteSupport(a);
@@ -264,7 +264,7 @@ public class WFFFrame extends JFrame
 		btnCurrentStandings.setBounds(659, 462, 121, 32);
 		getContentPane().add(btnCurrentStandings);
 		
-		JLabel lblTable = new JLabel("           Mapname                         3 points                           2 points                           1 point                              1 point");
+		JLabel lblTable = new JLabel("           Mapname                         1 point                             State                                                                             ");
 		lblTable.setFont(new Font("Tahoma", Font.BOLD, 11));
 		lblTable.setBounds(20, 35, 600, 14);
 		getContentPane().add(lblTable);
@@ -273,15 +273,15 @@ public class WFFFrame extends JFrame
 		lblRightClickA.setBounds(660, 431, 120, 20);
 		getContentPane().add(lblRightClickA);
 		
-		for (int i = 0; i < 20; i++)
+		for (int i = 0; i < 13; i++)
 		{
 			labelMaps[i] = new JLabel((i + 1) + ". undefined");
 			labelMaps[i].setBounds(10, 55 + i * 22, 140, 20);
 			getContentPane().add(labelMaps[i]);
-			for (int j = 0; j < 4; j++)
+			for (int j = 0; j < 1; j++)
 			{
-				labelPoints[i][j] = new JLabel("(0)");
-				labelPoints[i][j].setBounds(255 + j * 125 + 5, 55 + i * 22, 30, 20);
+				labelPoints[i][j] = new JLabel("no result yet");
+				labelPoints[i][j].setBounds(290 + j * 125 + 5, 55 + i * 22, 100, 20);
 				comboPoints[i][j] = new JPositionedComboBox(i, j);
 				comboPoints[i][j].setBounds(155 + j * 125, 55 + i * 22, 100, 20);
 				comboPoints[i][j].addItemListener(new ItemListener(){
@@ -291,6 +291,8 @@ public class WFFFrame extends JFrame
 						{
 							try
 							{
+								Player p1 = (Player) ((JPositionedComboBox) e.getSource()).getItemAt(0);
+								Player p2 = (Player) ((JPositionedComboBox) e.getSource()).getItemAt(1);
 								Player affected = (Player) e.getItem();
 								int i = ((JPositionedComboBox) e.getSource()).getI();
 								int j = ((JPositionedComboBox) e.getSource()).getJ();
@@ -300,27 +302,18 @@ public class WFFFrame extends JFrame
 									{
 										case 0: affected.addFirstPosition(i); 
 										break;
-										case 1: affected.addSecondPosition(i); 
-										break;
-										case 2: affected.addThirdPosition(i);
-										break;
-										case 3: affected.addForthPosition(i);
 									}
-									labelPoints[i][j].setText("(" + affected.getPointsBeforeRound(i) + ")");
-								}
+									labelPoints[i][j].setText(p1.getName() + " " + p1.getPointsBeforeRound(i)
+											+ " : " + p2.getPointsBeforeRound(i) + " " + p2.getName());
+								}	
 								else if (e.getStateChange() == ItemEvent.DESELECTED)
 								{
-									labelPoints[i][j].setText("(0)");
 									switch(j)
 									{
 										case 0: affected.removeFirstPosition(i); 
 										break;
-										case 1: affected.removeSecondPosition(i); 
-										break;
-										case 2: affected.removeThirdPosition(i); 
-										break;
-										case 3: affected.removeForthPosition(i);
 									}
+									labelPoints[i][j].setText("no result yet");
 								}
 							}
 							catch (Exception ex) {
