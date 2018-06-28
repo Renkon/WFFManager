@@ -73,7 +73,7 @@ public class WFFFrame extends JFrame
 		
 		DefaultListModel<Player> listModel = new DefaultListModel<Player>();
 		
-		JLabel lblWffManager = new JLabel("WFF Manager - v1.0");
+		JLabel lblWffManager = new JLabel("Lucky Seven DM Manager - v1.0");
 		lblWffManager.setFont(new Font("Calibri", Font.PLAIN, 24));
 		lblWffManager.setHorizontalAlignment(SwingConstants.CENTER);
 		lblWffManager.setForeground(new Color(128, 0, 0));
