@@ -64,7 +64,7 @@ public class WFFFrame extends JFrame
 		self = this;
 		this.setResizable(false);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		this.setSize(800, 600);
+		this.setSize(800, 610);
 		this.setLocation(Utils.getX(this), Utils.getY(this));
 		this.setTitle("WFF Manager");
 		ImageIcon icon = new ImageIcon(getClass().getResource("/ar/com/renkon/ui/fotl.png"));
