@@ -30,6 +30,8 @@ import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
@@ -57,6 +59,7 @@ public class WFFFrame extends JFrame
 	private JLabel[] labelMaps = new JLabel[13];
 	private JLabel[][] labelPoints = new JLabel[13][4];
 	private JPositionedComboBox[][] comboPoints = new JPositionedComboBox[13][4];
+	private JTextField[] fieldPlayersAlive = new JTextField[13];
 	private JList<Player> list;
 	
 	public WFFFrame()
@@ -264,7 +267,7 @@ public class WFFFrame extends JFrame
 		btnCurrentStandings.setBounds(659, 462, 121, 32);
 		getContentPane().add(btnCurrentStandings);
 		
-		JLabel lblTable = new JLabel("           Mapname                         1 point                             State                                                                             ");
+		JLabel lblTable = new JLabel("           Mapname                         1 point                             State                                   Players alive by end of map");
 		lblTable.setFont(new Font("Tahoma", Font.BOLD, 11));
 		lblTable.setBounds(20, 35, 600, 14);
 		getContentPane().add(lblTable);
@@ -275,9 +278,38 @@ public class WFFFrame extends JFrame
 		
 		for (int i = 0; i < 13; i++)
 		{
+			String placeholder = "Ex.: Council, Tails, Renkon, ...";
+
 			labelMaps[i] = new JLabel((i + 1) + ". undefined");
 			labelMaps[i].setBounds(10, 55 + i * 22, 140, 20);
+			fieldPlayersAlive[i] = new JTextField();
+			fieldPlayersAlive[i].setBounds(400, 55 + i * 22, 240, 20);
 			getContentPane().add(labelMaps[i]);
+			getContentPane().add(fieldPlayersAlive[i]);
+			
+			JTextField temp = fieldPlayersAlive[i];
+			temp.setText(placeholder);  
+        	temp.setForeground(new Color(150, 150, 150));  
+			temp.addFocusListener(new FocusListener() {  
+
+			    @Override  
+			    public void focusGained(FocusEvent e) {
+			    	if (placeholder.equals(temp.getText())) {
+			    		temp.setText("");  
+			    		temp.setForeground(new Color(50, 50, 50));
+			    	}
+			    }  
+
+			    @Override  
+			    public void focusLost(FocusEvent e) { 
+
+			        if (temp.getText().length() == 0) {  
+			        	temp.setText(placeholder);  
+			        	temp.setForeground(new Color(150, 150, 150));  
+			        }  
+
+			    }  
+			});
 			for (int j = 0; j < 1; j++)
 			{
 				labelPoints[i][j] = new JLabel("no result yet");
@@ -354,6 +386,11 @@ public class WFFFrame extends JFrame
 		return comboPoints;
 	}
 
+	public JTextField[] getAlivePlayers()
+	{
+		return fieldPlayersAlive;
+	}
+	
 	private int getRow(Point point)
 	{
 		return list.locationToIndex(point);

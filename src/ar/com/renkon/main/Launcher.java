@@ -25,6 +25,7 @@ public class Launcher {
 				try 
 				{
 					UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+					logger.log(Level.SEVERE, UIManager.getSystemLookAndFeelClassName());
 					new WFFFrame();
 				} 
 				catch (Exception e) 

@@ -40,6 +40,7 @@ public class DataController
 		output.add("[tr]");
 		output.add("[td]Mapname[/td]");
 		output.add("[td]1 point[/td]");
+		output.add("[td]Players alive[/td]");
 		output.add("[/tr]");
 		output.add("");
 		output.add("");
@@ -52,6 +53,7 @@ public class DataController
 			output.add("[td]" + maps.get(i) + "[/td]");
 			output.add("[td]" + p1.getName() + " " + p1.getPointsBeforeRound(i) + " : " + 
 					p2.getPointsBeforeRound(i) + " " + p2.getName() + "[/td]");
+			output.add("[td]" + frame.getAlivePlayers()[i].getText().replace("Ex.: Council, Tails, Renkon, ..." ,"") + "[/td]");
 			output.add("[/tr]");
 		}
 		output.add("");
